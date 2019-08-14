@@ -9,6 +9,10 @@ import br.com.boot.forum.modelo.Topico;
 import br.com.boot.forum.repository.TopicoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,7 +28,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.List;
 import java.util.Optional;
 
 // TODO Implementar o 404 no cadastro, atualização e remoção
@@ -41,15 +44,16 @@ public class TopicosResource {
     private CursoRepository cursoRepository;
 
     @GetMapping
-    public List<TopicoDTO> lista(@RequestParam(required = false) String nomeCurso){
+    public Page<TopicoDTO> lista(@RequestParam(required = false) String nomeCurso,
+                                 @PageableDefault(sort = "dataCriacao", direction = Sort.Direction.DESC, page = 0, size = 10) Pageable paginacao){
         log.info("Param: {}", nomeCurso);
 
-        List<Topico> topicos;
+        Page<Topico> topicos;
 
         if(nomeCurso == null){
-            topicos = topicoRepository.findAll();
+            topicos = topicoRepository.findAll(paginacao);
         } else{
-            topicos = topicoRepository.findByCursoNome(nomeCurso);
+            topicos = topicoRepository.findByCursoNome(nomeCurso, paginacao);
         }
 
         return TopicoDTO.convert(topicos);
